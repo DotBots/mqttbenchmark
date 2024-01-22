@@ -2,11 +2,17 @@ import time
 import threading
 import csv
 import paho.mqtt.client as mqtt
+import random
+import string
+
+def generate_random_string(length):
+    letters_and_digits = string.ascii_letters + string.digits
+    return ''.join(random.choice(letters_and_digits) for _ in range(length))
 
 broker = 'broker.hivemq.com'
 TCP_port = 1883
-topic = 'benchmarking'
-csv_file_path = 'received_messages.csv'
+topic = generate_random_string(20)
+csv_file_path = 'benchmarking_results.csv'
 
 def on_publish(client, userdata, mid):
     pass
@@ -15,8 +21,9 @@ def on_message(client, userdata, msg):
     received_time = time.time()  # Use time.time() for better precision
     message = msg.payload.decode('utf-8')
     print(f"Received message: {message}")
-    sent_time = message[:-2]
-    counter_column = message[-1:]
+    message = message.split(',')
+    sent_time = message[0]
+    counter_column = message[1]
     # print(time_column, value_column)
     time_diff = float(received_time) - float(sent_time)
 
@@ -35,20 +42,20 @@ class MQTTThread(threading.Thread):
         client.subscribe(topic)
         client.loop_forever()
 
-# Start the MQTT thread
-mqtt_thread = MQTTThread()
-mqtt_thread.start()
+# Start the RX thread
+rx_thread = MQTTThread()
+rx_thread.start()
 
 # Main thread for publishing
-client_pub = mqtt.Client('delay_benchmarking_publisher')
-client_pub.connect(broker, TCP_port)
+tx_thread = mqtt.Client('delay_benchmarking_publisher')
+tx_thread.connect(broker, TCP_port)
 
 counter = 0
 while True:
     current_time = time.time()
     message = str(str(current_time) + ',' + str(counter)).encode('utf-8')
-    client_pub.publish(topic, payload=message, qos=0)
+    tx_thread.publish(topic, payload=message, qos=0)
     print(f"Published message: {message}")
     counter += 1
 
-    time.sleep(1)
+    time.sleep(0.5)
