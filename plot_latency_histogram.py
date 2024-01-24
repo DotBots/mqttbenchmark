@@ -28,11 +28,11 @@ df=pd.read_csv(data_file)
 # Use values below 200ms
 latency = df.loc[df["latency_seconds"] < max_lat, "latency_seconds"].values * 1000 # Convert Latency from secondsto miliseconds
 # Use all values.
-# latency = df["latency_seconds"].values * 1000 # Convert Latency from secondsto miliseconds
+latency_all = df["latency_seconds"].values * 1000 # Convert Latency from secondsto miliseconds
 
-print(f"Mean Latency = {latency.mean()} mm")
-print(f"Root Mean Square Latency = {np.sqrt((latency**2).mean())} mm")
-print(f"Latency Standard Deviation = {latency.std()} mm")
+print(f"Mean Latency = {latency_all.mean()} mm")
+print(f"Root Mean Square Latency = {np.sqrt((latency_all**2).mean())} mm")
+print(f"Latency Standard Deviation = {latency_all.std()} mm")
 
 # prepare the plot
 fig = plt.figure(layout="constrained", figsize=(5,4))
@@ -47,7 +47,7 @@ hist_ax.set_xlim((1, max_lat*1e3))
 ax2 = hist_ax.twinx()
 sns.kdeplot(data=latency, ax=ax2, label="density", color="xkcd:black", linewidth=1, linestyle='--')
 
-hist_ax.axvline(x=latency.mean(), color='xkcd:red', label="Mean")
+hist_ax.axvline(x=latency_all.mean(), color='xkcd:red', label="Mean")
 # Trick to get the legend  unified between the TwinX plots
 hist_ax.plot([], [], color="xkcd:black", linestyle='--', label = 'density')
 
